@@ -378,3 +378,118 @@ declare module chrome.sockets.tcpServer {
     var onAccept: Event<AcceptEventArgs>;
     var onAcceptError: Event<AcceptErrorEventArgs>;
 }
+
+declare module chrome.serial {
+
+    interface Event<T> {
+        addListener(callback: (info: T) => void): void;
+    }
+
+    interface ReceiveEventArgs {
+        connectionId: number,
+        data: ArrayBuffer
+    }
+
+    var onReceive: Event<ReceiveEventArgs>;
+
+    export enum ReceiveError {
+        disconnected,
+        timeout,
+        device_lost,
+        break,
+        frame_error,
+        overrun,
+        buffer_overflow,
+        parity_error,
+        system_error
+    }
+
+    interface ReceiveErrorEventArgs {
+        connectionId: number,
+        error: string
+    }
+
+    var onReceiveError: Event<ReceiveErrorEventArgs>;
+
+    export enum DataBits {
+        seven,
+        eight
+    }
+
+    export enum ParityBit {
+        no,
+        odd,
+        even
+    }
+
+    export enum StopBits {
+        one,
+        two
+    }
+
+    interface ConnectionOptions {
+        persistent?: boolean;
+        name?: string;
+        bufferSize?: number;
+        bitrate?: number;
+        dataBits?: string;
+        parityBit?: string;
+        stopBits?: string;
+        ctsFlowControl?: boolean;
+        receiveTimeout?: number;
+        sendTimeout?: number;
+    }
+
+    interface ConnectionInfo {
+        connectionId: number;
+        paused: boolean;
+        persistent: boolean;
+        name: string;
+        bufferSize: number;
+        receiveTimeout: number;
+        sendTimeout: number;
+        bitrate?: number;
+        dataBits?: DataBits;
+        parityBit?: ParityBit;
+        stopBits?: StopBits;
+        ctsFlowControl?: boolean;
+    }
+
+    export enum SendInfoError {
+        disconnected,
+        pending,
+        timeout,
+        system_error,
+    }
+
+    interface SendInfo {
+        bytesSent: number,
+        error: SendInfoError,
+    }
+
+    interface GetSignals {
+        dcd: boolean,
+        cts: boolean,
+        ri: boolean,
+        dsr: boolean
+    }
+
+    interface SetSignals {
+        dtr: boolean,
+        rts: boolean
+    }
+
+    export function getDevices(callback: (path: string, vendorId?: number, productId?: number, displayName?: string) => void): void;
+    export function connect(path: string, options: ConnectionOptions, callback: (connectionInfo: ConnectionInfo) => void): void;
+    export function update(connectionId: number, options: ConnectionOptions, callback: (result: boolean) => void): void;
+    export function disconnect(connectionId: number, callback: (result: boolean) => void): void;
+    export function setPaused(connectionId: number, paused: boolean, callback: (connectionId: number, paused: boolean, callback: () => void) => void): void;
+    export function getInfo(connectionId: number, callback: (connectionInfo: ConnectionInfo) => void): void;
+    export function getConnections(callback: (connectionInfos: ConnectionInfo[]) => void): void;
+    export function send(connectionId: number, data: ArrayBuffer, callback: (sendInfo: SendInfo) => void): void;
+    export function flush(connectionId: number, callback: (result: boolean) => void): void;
+    export function getControlSignals(connectionId: number, callback: (signals: GetSignals) => void): void;
+    export function setControlSignals(connectionId: number, signals: SetSignals, callback: (result: boolean) => void): void;
+    export function setBreak(connectionId: number, callback: (result: boolean) => void): void;
+    export function clearBreak(connetionId: number, callback: (result: boolean) => void): void;
+}
